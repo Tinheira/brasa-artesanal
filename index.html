@@ -278,6 +278,22 @@
     .float-cart-btn:hover { background:#b84000; transform:scale(1.04); }
 
 
+    /* ─── FOOTER ─── */
+    footer { background:var(--smoke); border-top:1px solid var(--border); padding:40px 24px 24px; }
+    .footer-inner { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:32px; }
+    .f-logo-a { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--cream); letter-spacing:3px; }
+    .f-logo-b { font-family:'Bebas Neue',cursive; font-size:10px; color:var(--fire); letter-spacing:4px; }
+    .f-slogan { color:var(--muted); font-size:11px; margin-top:6px; font-style:italic; line-height:1.7; }
+    .f-sec h4 { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--fire); margin-bottom:12px; }
+    .f-sec p, .f-sec a { color:var(--muted); font-size:12px; line-height:2; display:block; text-decoration:none; transition:color .2s; }
+    .f-sec a:hover { color:var(--cream); }
+    .footer-bot { max-width:1240px; margin:24px auto 0; padding-top:16px; border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+    .footer-bot p { font-size:10px; color:var(--muted); }
+    @media(max-width:640px) {
+      .footer-inner { grid-template-columns:1fr 1fr; }
+      .footer-bot { justify-content:center; text-align:center; }
+    }
+
     /* ─── TOAST ─── */
     .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--char); border:1px solid rgba(212,86,10,.4); color:var(--cream); padding:9px 16px; border-radius:50px; font-size:12px; z-index:3000; opacity:0; transition:all .28s; pointer-events:none; white-space:nowrap; display:flex; align-items:center; gap:6px; }
     .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
@@ -373,7 +389,7 @@
     <span class="resto-meta-item"><i class="fas fa-clock"></i> 18h – 02h</span>
     <span class="resto-meta-item"><i class="fas fa-motorcycle"></i> Delivery</span>
   </div>
-  <button type="button" class="resto-wa" onclick="window.open('https://wa.me/5511932568954','_blank')">
+  <button type="button" class="resto-wa" onclick="window.open('https://wa.me/5511914962788','_blank')">
     <i class="fab fa-whatsapp"></i> Pedir pelo WhatsApp
   </button>
 </div>
@@ -425,8 +441,7 @@
     </div>
     <div class="f-sec">
       <h4>Contato</h4>
-      <a href="https://wa.me/5511932568954">(11) 93256-8954</a>
-      <a href="#">Peça pelo iFood</a>
+      <a href="https://wa.me/5511914962788"><i class="fab fa-whatsapp"></i> (11) 91496-2788</a>
     </div>
     <div class="f-sec">
       <h4>Redes</h4>
@@ -510,7 +525,7 @@
       <button class="btn-wa" onclick="orderWA()">
         <i class="fab fa-whatsapp fa-lg"></i> Pedir pelo WhatsApp
       </button>
-      <button type="button" class="btn-if" onclick="window.open('https://wa.me/5511932568954?text=Olá! Quero consultar a taxa de entrega para meu endereço.','_blank')">
+      <button type="button" class="btn-if" onclick="window.open('https://wa.me/5511914962788?text=Olá! Quero consultar a taxa de entrega para meu endereço.','_blank')">
         <i class="fas fa-map-marker-alt"></i> Consultar taxa de entrega
       </button>
     </div>
@@ -817,7 +832,7 @@ function orderWA() {
     msg+=`   💰 R$ ${fmt(item.total)}\n\n`;
   });
   msg+=`*Total: R$ ${fmt(grandTotal())}*\n\nEndereço para entrega: `;
-  window.open(`https://wa.me/5511932568954?text=${encodeURIComponent(msg)}`,'_blank');
+  window.open(`https://wa.me/5511914962788?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
 /* ══════════════ TOAST ══════════════ */
