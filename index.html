@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Brasa Artesanal – Hambúrgueres artesanais feitos na brasa. Faça seu pedido online.">
   <title>Brasa Artesanal — Faça seu Pedido</title>
+  <link rel="icon" type="image/png" href="img/logo-brasa-artesanal.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -267,8 +268,8 @@
     .cart-tot-v { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--fire); }
     .btn-wa { width:100%; background:linear-gradient(135deg,#25D366,#1a9e51); border:none; color:#fff; padding:13px; border-radius:11px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; transition:all .2s; margin-bottom:7px; }
     .btn-wa:hover { transform:scale(1.02); }
-    .btn-if { width:100%; background:rgba(234,67,53,.1); border:1px solid rgba(234,67,53,.3); color:#EA4335; padding:11px; border-radius:11px; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all .2s; }
-    .btn-if:hover { background:rgba(234,67,53,.2); }
+    .btn-if { width:100%; background:rgba(212,86,10,.1); border:1px solid rgba(212,86,10,.3); color:var(--fire); padding:11px; border-radius:11px; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all .2s; }
+    .btn-if:hover { background:rgba(212,86,10,.2); }
 
     /* floating cart */
     .float-cart { position:fixed; bottom:20px; right:20px; z-index:900; display:none; }
@@ -276,17 +277,6 @@
     .float-cart-btn { background:var(--fire); border:none; color:#fff; padding:11px 20px; border-radius:50px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 6px 24px rgba(212,86,10,.55); transition:all .2s; }
     .float-cart-btn:hover { background:#b84000; transform:scale(1.04); }
 
-    /* ─── FOOTER ─── */
-    footer { background:var(--smoke); border-top:1px solid var(--border); padding:40px 24px 24px; }
-    .footer-inner { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:32px; }
-    .f-logo-a { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--cream); letter-spacing:3px; }
-    .f-logo-b { font-family:'Bebas Neue',cursive; font-size:10px; color:var(--fire); letter-spacing:4px; }
-    .f-slogan { color:var(--muted); font-size:11px; margin-top:6px; font-style:italic; line-height:1.7; }
-    .f-sec h4 { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--fire); margin-bottom:12px; }
-    .f-sec p, .f-sec a { color:var(--muted); font-size:12px; line-height:2; display:block; text-decoration:none; transition:color .2s; }
-    .f-sec a:hover { color:var(--cream); }
-    .footer-bot { max-width:1240px; margin:24px auto 0; padding-top:16px; border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; }
-    .footer-bot p { font-size:10px; color:var(--muted); }
 
     /* ─── TOAST ─── */
     .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--char); border:1px solid rgba(212,86,10,.4); color:var(--cream); padding:9px 16px; border-radius:50px; font-size:12px; z-index:3000; opacity:0; transition:all .28s; pointer-events:none; white-space:nowrap; display:flex; align-items:center; gap:6px; }
@@ -297,16 +287,50 @@
     .fade.in { opacity:1; transform:translateY(0); }
 
     /* ─── RESPONSIVE ─── */
-    @media(max-width:720px) {
-      .ham { display:block; }
-      .cart-side { max-width:100%; }
-      .resto-banner { height:200px; }
-      .resto-wa { display:none; }
+
+    /* Tablet (≤ 1024px) */
+    @media(max-width:1024px) {
+      .pgrid { grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); }
+      .catb { padding:0 12px; font-size:11px; }
     }
-    @media(max-width:480px) {
+
+    /* Mobile (≤ 640px) */
+    @media(max-width:640px) {
+      --hdr: 56px;
+
+      /* header: hide text cart btn, show icon only */
+      .cart-icon-btn { display:none; }
+      .ham { display:flex; align-items:center; justify-content:center;
+             width:38px; height:38px; background:var(--fire);
+             border-radius:10px; color:#fff; font-size:16px; position:relative; }
+      .cart-side { max-width:100%; width:100%; }
+
+      /* logo in header smaller */
+      .logo-img { height:34px; }
+
+      /* categories smaller */
+      .catb { padding:0 10px; font-size:10px; letter-spacing:.4px; }
+
+      /* banner logo smaller */
+      .resto-logo-img { height:260px; }
+      .resto-banner { padding:20px 16px 20px; }
+      .resto-meta { gap:10px; }
+      .resto-wa { padding:9px 18px; font-size:12px; }
+
+      /* menu */
+      #cardapio { padding:24px 12px 100px; }
+      .pgrid { grid-template-columns:1fr 1fr; gap:10px; }
+      .pcard-img { height:140px; }
+      .pcard-name { font-size:14px; }
+
+      /* cart float button */
+      .float-cart-btn { padding:10px 16px; font-size:12px; }
+    }
+
+    /* Small mobile (≤ 380px) */
+    @media(max-width:380px) {
       .pgrid { grid-template-columns:1fr; }
-      .footer-bot { justify-content:center; text-align:center; }
-      .resto-content { padding-bottom:20px; }
+      .resto-logo-img { height:200px; }
     }
   </style>
 </head>
@@ -333,7 +357,10 @@
         <span id="cartLabel">Meu Pedido</span>
         <span class="cbadge" id="cbadge">0</span>
       </button>
-      <button type="button" class="ham" onclick="openCart()" aria-label="Carrinho"><i class="fas fa-shopping-bag"></i></button>
+      <button type="button" class="ham" onclick="openCart()" aria-label="Carrinho">
+        <i class="fas fa-shopping-bag"></i>
+        <span class="cbadge" id="cbadge-mob">0</span>
+      </button>
     </div>
   </div>
 </header>
@@ -483,8 +510,8 @@
       <button class="btn-wa" onclick="orderWA()">
         <i class="fab fa-whatsapp fa-lg"></i> Pedir pelo WhatsApp
       </button>
-      <button class="btn-if">
-        <i class="fas fa-motorcycle"></i> Pedir pelo iFood
+      <button type="button" class="btn-if" onclick="window.open('https://wa.me/5511932568954?text=Olá! Quero consultar a taxa de entrega para meu endereço.','_blank')">
+        <i class="fas fa-map-marker-alt"></i> Consultar taxa de entrega
       </button>
     </div>
   </div>
@@ -670,8 +697,12 @@ function totalItems() { return cart.reduce((s,i)=>s+i.qty,0); }
 
 function refreshUI() {
   const n = totalItems();
-  document.getElementById('cbadge').textContent = n;
-  document.getElementById('cbadge').classList.toggle('on', n>0);
+  ['cbadge','cbadge-mob'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = n;
+    el.classList.toggle('on', n>0);
+  });
   document.getElementById('floatCart').classList.toggle('on', n>0);
   document.getElementById('floatLabel').textContent = `${n} item${n!==1?'s':''} · R$ ${fmt(grandTotal())}`;
   document.getElementById('cartTot').textContent = `R$ ${fmt(grandTotal())}`;
