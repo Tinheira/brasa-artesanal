@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Brasa Artesanal – Hambúrgueres artesanais feitos na brasa. Faça seu pedido online.">
+  <title>Brasa Artesanal — Faça seu Pedido</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --fire:   #D4560A;
+      --amber:  #B8730F;
+      --cream:  #F5EDE6;
+      --smoke:  #1A1008;
+      --coal:   #0E0804;
+      --char:   #1E1208;
+      --muted:  #7A6050;
+      --border: rgba(180,100,30,.18);
+      --r:      14px;
+      --hdr:    64px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family:'Inter',sans-serif; background:var(--coal); color:var(--cream); overflow-x:hidden; }
+
+    body::after {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size:180px; opacity:.5;
+    }
+
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--fire);border-radius:2px}
+
+    /* ─── HEADER ─── */
+    header {
+      position:fixed; top:0; width:100%; height:var(--hdr); z-index:1000;
+      background:rgba(14,8,4,.97);
+      -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);
+    }
+    .hdr {
+      max-width:1240px; margin:0 auto; padding:0 24px;
+      display:flex; align-items:center; gap:8px;
+      height:100%;
+    }
+    .logo { text-decoration:none; display:flex; align-items:center; }
+    .logo-img { height:44px; width:auto; object-fit:contain; filter:drop-shadow(0 2px 8px rgba(212,86,10,.4)); }
+
+    .hdr-right { display:flex; align-items:center; gap:10px; }
+    .cart-icon-btn {
+      position:relative; background:var(--fire); border:none; color:#fff;
+      padding:0 16px; height:36px; border-radius:10px; cursor:pointer; font-size:13px; font-weight:600;
+      display:flex; align-items:center; gap:8px; transition:all .2s;
+    }
+    .cart-icon-btn:hover { background:#b84000; }
+    .cbadge {
+      background:#c0392b; color:#fff; width:18px; height:18px; border-radius:50%;
+      font-size:10px; font-weight:700; display:none; align-items:center; justify-content:center;
+    }
+    .cbadge.on { display:flex; }
+    .ham { display:none; background:none; border:none; color:var(--cream); font-size:20px; cursor:pointer; }
+
+    /* ─── RESTAURANT BANNER ─── */
+    .resto-banner {
+      margin-top:var(--hdr);
+      background:linear-gradient(180deg,#111620 0%,var(--coal) 100%);
+      padding:32px 24px 28px;
+      display:flex; flex-direction:column; align-items:center; gap:18px;
+      border-bottom:1px solid var(--border);
+    }
+    .resto-logo-img {
+      height:480px; width:auto; max-width:90vw; object-fit:contain;
+      filter:drop-shadow(0 10px 50px rgba(212,86,10,.75));
+    }
+    .resto-meta {
+      display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:center;
+    }
+    .resto-meta-item { display:flex; align-items:center; gap:5px; font-size:12px; color:rgba(245,237,230,.55); }
+    .resto-meta-item i { color:var(--fire); font-size:11px; }
+    .resto-open { background:rgba(37,211,102,.15); color:#25D366; border:1px solid rgba(37,211,102,.3); border-radius:50px; padding:2px 10px; font-size:10px; font-weight:700; letter-spacing:.5px; }
+    .resto-wa {
+      background:linear-gradient(135deg,#25D366,#1a9e51); border:none; color:#fff;
+      padding:10px 24px; border-radius:50px; font-size:13px; font-weight:600;
+      cursor:pointer; display:flex; align-items:center; gap:7px; transition:all .2s;
+      white-space:nowrap; box-shadow:0 4px 16px rgba(37,211,102,.3);
+    }
+    .resto-wa:hover { transform:translateY(-2px); box-shadow:0 6px 22px rgba(37,211,102,.45); }
+
+    /* ─── CATEGORY TABS ─── */
+    .cat-nav {
+      flex:1; display:flex; align-items:center; height:100%; overflow:hidden;
+    }
+    .cat-scroll {
+      display:flex; align-items:center; justify-content:center; overflow-x:auto;
+      scrollbar-width:none; gap:2px; height:100%; width:100%;
+    }
+    .cat-scroll::-webkit-scrollbar { display:none; }
+    .catb {
+      background:none; border:none; color:var(--muted);
+      padding:0 16px; height:100%; font-size:12px; font-weight:600;
+      letter-spacing:.8px; text-transform:uppercase; white-space:nowrap;
+      cursor:pointer; border-bottom:2px solid transparent; transition:all .2s;
+    }
+    .catb:hover { color:var(--cream); }
+    .catb.on { color:var(--fire); border-bottom-color:var(--fire); }
+    .catb-fire { font-size:10px; margin-right:4px; color:var(--fire); }
+
+    /* ─── MENU ─── */
+    #cardapio { background:var(--coal); padding:32px 24px 80px; }
+    .menu-inner { max-width:1240px; margin:0 auto; }
+    .cat-section { margin-bottom:60px; scroll-margin-top:110px; }
+    .cat-title {
+      font-family:'Bebas Neue',cursive; font-size:28px; color:var(--cream);
+      letter-spacing:2px; display:flex; align-items:center; gap:12px; margin-bottom:22px;
+    }
+    .cat-title i { color:var(--fire); font-size:22px; }
+    .cat-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* product grid */
+    .pgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:14px; }
+
+    /* product card */
+    .pcard {
+      background:var(--char); border:1px solid var(--border);
+      border-radius:var(--r); overflow:hidden; transition:all .3s; display:flex; flex-direction:column;
+    }
+    .pcard:hover { transform:translateY(-3px); border-color:rgba(212,86,10,.3); box-shadow:0 10px 36px rgba(0,0,0,.4); }
+    .pcard-img { height:180px; overflow:hidden; position:relative; background:var(--smoke); flex-shrink:0; }
+    .pcard-img img { width:100%; height:100%; object-fit:cover; filter:brightness(.88) saturate(.9); transition:transform .5s,filter .3s; }
+    .pcard:hover .pcard-img img { transform:scale(1.06); filter:brightness(.97) saturate(1.05); }
+    .pcard-img .fallback {
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:60px;
+      background:radial-gradient(circle at 55% 40%, rgba(212,86,10,.15) 0%, rgba(14,8,4,0) 70%);
+    }
+    .pbadge {
+      position:absolute; top:9px; right:9px; z-index:2;
+      background:var(--fire); color:#fff; padding:3px 9px; border-radius:50px;
+      font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    }
+    .pcard-body { padding:14px 14px 13px; flex:1; display:flex; flex-direction:column; }
+    .pcard-name { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; margin-bottom:3px; }
+    .pcard-desc { font-size:11px; color:var(--muted); line-height:1.65; margin-bottom:12px; flex:1; }
+    .pcard-foot { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .pcard-price { font-family:'Bebas Neue',cursive; font-size:24px; color:var(--fire); line-height:1; }
+    .pcard-price small { font-family:'Inter',sans-serif; font-size:11px; color:var(--muted); font-weight:400; }
+    .btn-add {
+      background:var(--fire); border:none; color:#fff;
+      padding:0 16px; height:34px; border-radius:8px; flex-shrink:0;
+      cursor:pointer; font-size:12px; font-weight:600;
+      display:flex; align-items:center; gap:5px; transition:all .2s;
+    }
+    .btn-add:hover { background:#b84000; }
+    .btn-add.added { background:#15803d; animation:pop .28s ease; }
+    @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.12)} 100%{transform:scale(1)} }
+
+    /* ─── DRINK LIST ─── */
+    .drink-list { display:flex; flex-direction:column; gap:7px; }
+    .drink-item {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:13px 16px; background:var(--char); border:1px solid var(--border);
+      border-radius:11px; transition:all .2s; gap:14px;
+    }
+    .drink-item:hover { border-color:rgba(212,86,10,.28); }
+    .drink-left { display:flex; align-items:center; gap:13px; flex:1; min-width:0; }
+    .drink-thumb { width:48px; height:48px; border-radius:9px; object-fit:cover; flex-shrink:0; filter:brightness(.85) saturate(.8); }
+    .drink-thumb-fb { width:48px; height:48px; border-radius:9px; background:var(--smoke); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:22px; }
+    .drink-info { min-width:0; }
+    .drink-name { font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .drink-desc { font-size:11px; color:var(--muted); margin-top:1px; }
+    .drink-right { display:flex; align-items:center; gap:14px; flex-shrink:0; }
+    .drink-price { font-family:'Bebas Neue',cursive; font-size:20px; color:var(--fire); line-height:1; }
+    .drink-price small { font-family:'Inter',sans-serif; font-size:10px; color:var(--muted); }
+    .btn-add-sm {
+      background:var(--fire); border:none; color:#fff;
+      width:30px; height:30px; border-radius:7px; cursor:pointer; font-size:12px;
+      display:flex; align-items:center; justify-content:center; transition:all .2s; flex-shrink:0;
+    }
+    .btn-add-sm:hover { background:#b84000; }
+    .btn-add-sm.added { background:#15803d; animation:pop .28s ease; }
+
+    /* ─── MODAL ─── */
+    .mov {
+      position:fixed; inset:0; background:rgba(0,0,0,.8);
+      -webkit-backdrop-filter:blur(5px); backdrop-filter:blur(5px);
+      z-index:2000; display:flex; align-items:center; justify-content:center; padding:16px;
+      opacity:0; pointer-events:none; transition:opacity .28s;
+    }
+    .mov.open { opacity:1; pointer-events:all; }
+    .modal {
+      background:var(--char); border:1px solid var(--border);
+      border-radius:18px; max-width:520px; width:100%; max-height:92vh;
+      overflow-y:auto; transform:scale(.95) translateY(20px); transition:transform .28s;
+      scrollbar-width:thin; scrollbar-color:var(--fire) transparent;
+    }
+    .mov.open .modal { transform:scale(1) translateY(0); }
+    .modal-hd { position:sticky; top:0; background:var(--char); padding:18px 18px 0; z-index:1; }
+    .modal-close { float:right; background:rgba(255,255,255,.1); border:none; color:var(--cream); width:28px; height:28px; border-radius:7px; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; }
+    .modal-img { width:100%; height:190px; object-fit:cover; border-radius:11px; margin-bottom:12px; filter:brightness(.85); }
+    .modal-img-fb { width:100%; height:190px; display:flex; align-items:center; justify-content:center; font-size:60px; background:var(--smoke); border-radius:11px; margin-bottom:12px; }
+    .modal-name { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; }
+    .modal-price { color:var(--fire); font-size:19px; font-family:'Bebas Neue',cursive; }
+    .modal-bd { padding:14px 18px 16px; }
+    .modal-hint { font-size:11px; color:var(--muted); margin-bottom:12px; }
+    .modal-stitle { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin:14px 0 8px; display:flex; align-items:center; gap:6px; }
+    .modal-stitle i { color:var(--fire); font-size:11px; }
+    .ing-list { display:flex; flex-direction:column; gap:5px; }
+    .ing-item { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:8px; cursor:pointer; transition:all .2s; user-select:none; }
+    .ing-item:hover { border-color:rgba(212,86,10,.28); }
+    .ing-item.on { background:rgba(212,86,10,.08); border-color:rgba(212,86,10,.28); }
+    .ing-item.off { opacity:.38; }
+    .ing-lbl { font-size:13px; }
+    .ing-ck { width:18px; height:18px; border-radius:5px; border:2px solid rgba(212,86,10,.35); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; }
+    .ing-item.on .ing-ck { background:var(--fire); border-color:var(--fire); }
+    .ing-item.on .ing-ck::after { content:'✓'; color:#fff; font-size:10px; font-weight:700; }
+    .extra-item { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:8px; cursor:pointer; transition:all .2s; }
+    .extra-item:hover,.extra-item.on { background:rgba(212,86,10,.08); border-color:rgba(212,86,10,.28); }
+    .extra-pr { font-size:11px; color:var(--fire); font-weight:600; }
+    .extra-ck { width:18px; height:18px; border-radius:5px; border:2px solid rgba(212,86,10,.35); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; margin-left:8px; }
+    .extra-item.on .extra-ck { background:var(--fire); border-color:var(--fire); }
+    .extra-item.on .extra-ck::after { content:'+'; color:#fff; font-size:11px; font-weight:700; }
+    .qty-row { display:flex; align-items:center; gap:14px; margin-top:16px; }
+    .qty-lbl { font-size:13px; color:var(--muted); }
+    .qty-ctrl { display:flex; align-items:center; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:9px; overflow:hidden; }
+    .qty-b { background:none; border:none; color:var(--cream); width:36px; height:36px; cursor:pointer; font-size:17px; transition:background .2s; }
+    .qty-b:hover { background:rgba(212,86,10,.2); }
+    .qty-n { width:32px; text-align:center; font-weight:700; font-size:15px; }
+    .modal-ft { padding:0 18px 18px; position:sticky; bottom:0; background:var(--char); }
+    .btn-madd { width:100%; background:var(--fire); border:none; color:#fff; padding:13px; border-radius:11px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:all .2s; }
+    .btn-madd:hover { background:#b84000; }
+
+    /* ─── CART ─── */
+    .cart-ov { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1500; opacity:0; pointer-events:none; transition:opacity .28s; }
+    .cart-ov.open { opacity:1; pointer-events:all; }
+    .cart-side { position:fixed; top:0; right:0; width:100%; max-width:390px; height:100%; background:var(--char); border-left:1px solid var(--border); z-index:1501; display:flex; flex-direction:column; transform:translateX(100%); transition:transform .3s ease; }
+    .cart-ov.open .cart-side { transform:translateX(0); }
+    .cart-hd { padding:18px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .cart-htitle { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; }
+    .cart-cls { background:rgba(255,255,255,.1); border:none; color:var(--cream); width:30px; height:30px; border-radius:7px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
+    .cart-items { flex:1; overflow-y:auto; padding:10px; scrollbar-width:thin; scrollbar-color:var(--fire) transparent; }
+    .cart-empty { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); gap:10px; }
+    .cart-empty-ico { font-size:36px; opacity:.2; }
+    .ci { display:flex; gap:10px; padding:11px; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:11px; margin-bottom:7px; animation:slideIn .28s ease; }
+    @keyframes slideIn { from{opacity:0;transform:translateX(14px)} to{opacity:1;transform:translateX(0)} }
+    .ci-img { width:48px; height:48px; border-radius:7px; object-fit:cover; flex-shrink:0; filter:brightness(.85); }
+    .ci-img-fb { width:48px; height:48px; border-radius:7px; background:var(--smoke); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .ci-info { flex:1; min-width:0; }
+    .ci-name { font-weight:600; font-size:12px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ci-custom { font-size:10px; color:var(--muted); line-height:1.5; margin-bottom:5px; }
+    .ci-foot { display:flex; align-items:center; justify-content:space-between; }
+    .ci-price { font-weight:700; color:var(--fire); font-size:13px; }
+    .ci-ctrl { display:flex; align-items:center; gap:4px; }
+    .ci-btn { background:rgba(255,255,255,.08); border:none; color:var(--cream); width:22px; height:22px; border-radius:5px; cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center; transition:background .2s; }
+    .ci-btn:hover { background:var(--fire); }
+    .ci-num { font-weight:700; min-width:14px; text-align:center; font-size:11px; }
+    .cart-ft { padding:14px 18px; border-top:1px solid var(--border); }
+    .cart-tot { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .cart-tot-l { font-size:12px; color:var(--muted); }
+    .cart-tot-v { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--fire); }
+    .btn-wa { width:100%; background:linear-gradient(135deg,#25D366,#1a9e51); border:none; color:#fff; padding:13px; border-radius:11px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; transition:all .2s; margin-bottom:7px; }
+    .btn-wa:hover { transform:scale(1.02); }
+    .btn-if { width:100%; background:rgba(234,67,53,.1); border:1px solid rgba(234,67,53,.3); color:#EA4335; padding:11px; border-radius:11px; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all .2s; }
+    .btn-if:hover { background:rgba(234,67,53,.2); }
+
+    /* floating cart */
+    .float-cart { position:fixed; bottom:20px; right:20px; z-index:900; display:none; }
+    .float-cart.on { display:block; }
+    .float-cart-btn { background:var(--fire); border:none; color:#fff; padding:11px 20px; border-radius:50px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 6px 24px rgba(212,86,10,.55); transition:all .2s; }
+    .float-cart-btn:hover { background:#b84000; transform:scale(1.04); }
+
+    /* ─── FOOTER ─── */
+    footer { background:var(--smoke); border-top:1px solid var(--border); padding:40px 24px 24px; }
+    .footer-inner { max-width:1240px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:32px; }
+    .f-logo-a { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--cream); letter-spacing:3px; }
+    .f-logo-b { font-family:'Bebas Neue',cursive; font-size:10px; color:var(--fire); letter-spacing:4px; }
+    .f-slogan { color:var(--muted); font-size:11px; margin-top:6px; font-style:italic; line-height:1.7; }
+    .f-sec h4 { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--fire); margin-bottom:12px; }
+    .f-sec p, .f-sec a { color:var(--muted); font-size:12px; line-height:2; display:block; text-decoration:none; transition:color .2s; }
+    .f-sec a:hover { color:var(--cream); }
+    .footer-bot { max-width:1240px; margin:24px auto 0; padding-top:16px; border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+    .footer-bot p { font-size:10px; color:var(--muted); }
+
+    /* ─── TOAST ─── */
+    .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--char); border:1px solid rgba(212,86,10,.4); color:var(--cream); padding:9px 16px; border-radius:50px; font-size:12px; z-index:3000; opacity:0; transition:all .28s; pointer-events:none; white-space:nowrap; display:flex; align-items:center; gap:6px; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* ─── FADE ─── */
+    .fade { opacity:0; transform:translateY(16px); transition:opacity .5s ease,transform .5s ease; }
+    .fade.in { opacity:1; transform:translateY(0); }
+
+    /* ─── RESPONSIVE ─── */
+    @media(max-width:720px) {
+      .ham { display:block; }
+      .cart-side { max-width:100%; }
+      .resto-banner { height:200px; }
+      .resto-wa { display:none; }
+    }
+    @media(max-width:480px) {
+      .pgrid { grid-template-columns:1fr; }
+      .footer-bot { justify-content:center; text-align:center; }
+      .resto-content { padding-bottom:20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="hdr">
+    <a class="logo" href="#">
+      <img class="logo-img" src="img/logo-brasa-artesanal.png" alt="Brasa Artesanal">
+    </a>
+    <nav class="cat-nav">
+      <div class="cat-scroll">
+        <button type="button" class="catb on" data-sec="artesanais"><i class="fas fa-fire catb-fire"></i>Artesanais</button>
+        <button type="button" class="catb"    data-sec="especiais">Especiais</button>
+        <button type="button" class="catb"    data-sec="combos">Combos</button>
+        <button type="button" class="catb"    data-sec="acomp">Acompanhamentos</button>
+        <button type="button" class="catb"    data-sec="bebidas">Bebidas</button>
+      </div>
+    </nav>
+    <div class="hdr-right">
+      <button type="button" class="cart-icon-btn" onclick="openCart()">
+        <i class="fas fa-shopping-bag"></i>
+        <span id="cartLabel">Meu Pedido</span>
+        <span class="cbadge" id="cbadge">0</span>
+      </button>
+      <button type="button" class="ham" onclick="openCart()" aria-label="Carrinho"><i class="fas fa-shopping-bag"></i></button>
+    </div>
+  </div>
+</header>
+
+<!-- ── RESTAURANT BANNER ── -->
+<div class="resto-banner">
+  <img class="resto-logo-img" src="img/logo-brasa-artesanal.png" alt="Brasa Artesanal">
+  <div class="resto-meta">
+    <span class="resto-open">ABERTO</span>
+    <span class="resto-meta-item"><i class="fas fa-clock"></i> 18h – 02h</span>
+    <span class="resto-meta-item"><i class="fas fa-motorcycle"></i> Delivery</span>
+  </div>
+  <button type="button" class="resto-wa" onclick="window.open('https://wa.me/5511932568954','_blank')">
+    <i class="fab fa-whatsapp"></i> Pedir pelo WhatsApp
+  </button>
+</div>
+
+<!-- ── CARDÁPIO ── -->
+<section id="cardapio">
+  <div class="menu-inner">
+
+    <div class="cat-section fade" id="artesanais">
+      <h3 class="cat-title"><i class="fas fa-fire"></i> Hambúrgueres Artesanais</h3>
+      <div class="pgrid" id="g-artesanais"></div>
+    </div>
+
+    <div class="cat-section fade" id="especiais">
+      <h3 class="cat-title"><i class="fas fa-crown"></i> Hambúrgueres Especiais</h3>
+      <div class="pgrid" id="g-especiais"></div>
+    </div>
+
+    <div class="cat-section fade" id="combos">
+      <h3 class="cat-title"><i class="fas fa-box-open"></i> Combos</h3>
+      <div class="pgrid" id="g-combos"></div>
+    </div>
+
+    <div class="cat-section fade" id="acomp">
+      <h3 class="cat-title"><i class="fas fa-utensils"></i> Acompanhamentos &amp; Molhos</h3>
+      <div class="pgrid" id="g-acomp"></div>
+    </div>
+
+    <div class="cat-section fade" id="bebidas">
+      <h3 class="cat-title"><i class="fas fa-glass-whiskey"></i> Bebidas</h3>
+      <div class="drink-list" id="g-bebidas"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="f-logo-a">BRASA</div>
+      <div class="f-logo-b">ARTESANAL</div>
+      <p class="f-slogan">"A Brasa Acende o Fogo.<br>O Sabor Acende a Memória."</p>
+    </div>
+    <div class="f-sec">
+      <h4>Horário</h4>
+      <p>Todos os dias</p>
+      <p>18h00 às 02h00</p>
+    </div>
+    <div class="f-sec">
+      <h4>Contato</h4>
+      <a href="https://wa.me/5511932568954">(11) 93256-8954</a>
+      <a href="#">Peça pelo iFood</a>
+    </div>
+    <div class="f-sec">
+      <h4>Redes</h4>
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+      <a href="#">TikTok</a>
+    </div>
+  </div>
+  <div class="footer-bot">
+    <p>© 2025 Brasa Artesanal. Todos os direitos reservados.</p>
+    <p>Feitos na Brasa. Feitos para Encantar.</p>
+  </div>
+</footer>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<!-- ── FLOATING CART ── -->
+<div class="float-cart" id="floatCart">
+  <button class="float-cart-btn" onclick="openCart()">
+    <i class="fas fa-shopping-bag"></i>
+    <span id="floatLabel">Ver carrinho</span>
+  </button>
+</div>
+
+<!-- ── MODAL PERSONALIZAR ── -->
+<div class="mov" id="mOv" onclick="mOvClick(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <button type="button" class="modal-close" title="Fechar" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      <div id="mImgWrap"></div>
+      <div class="modal-name"  id="mName"></div>
+      <div class="modal-price" id="mPrice"></div>
+    </div>
+    <div class="modal-bd">
+      <p class="modal-hint" id="mHint"></p>
+      <div id="mIngSec">
+        <div class="modal-stitle"><i class="fas fa-minus-circle"></i> Retirar ingredientes</div>
+        <div class="ing-list" id="mIngList"></div>
+      </div>
+      <div id="mExtraSec">
+        <div class="modal-stitle"><i class="fas fa-plus-circle"></i> Acrescentar ingredientes</div>
+        <div class="ing-list" id="mExtraList"></div>
+      </div>
+      <div class="qty-row">
+        <span class="qty-lbl">Quantidade:</span>
+        <div class="qty-ctrl">
+          <button class="qty-b" onclick="chgQty(-1)">−</button>
+          <span class="qty-n" id="mQty">1</span>
+          <button class="qty-b" onclick="chgQty(1)">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-madd" onclick="addFromModal()">
+        <span>Adicionar ao Carrinho</span>
+        <span id="mTotal">R$ 0,00</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CART SIDEBAR ── -->
+<div class="cart-ov" id="cartOv" onclick="cartOvClick(event)">
+  <div class="cart-side">
+    <div class="cart-hd">
+      <span class="cart-htitle">Meu Pedido</span>
+      <button type="button" class="cart-cls" title="Fechar carrinho" onclick="closeCart()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <div class="cart-empty">
+        <span class="cart-empty-ico"><i class="fas fa-shopping-bag"></i></span>
+        <p>Seu carrinho está vazio</p>
+      </div>
+    </div>
+    <div class="cart-ft">
+      <div class="cart-tot">
+        <span class="cart-tot-l">Total do pedido</span>
+        <span class="cart-tot-v" id="cartTot">R$ 0,00</span>
+      </div>
+      <button class="btn-wa" onclick="orderWA()">
+        <i class="fab fa-whatsapp fa-lg"></i> Pedir pelo WhatsApp
+      </button>
+      <button class="btn-if">
+        <i class="fas fa-motorcycle"></i> Pedir pelo iFood
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════ DATA ══════════════ */
+const BASE = 'https://images.unsplash.com/photo-';
+const BANNER_IMG = BASE + '1568901346375-23c9450c58cd?auto=format&fit=crop&w=1400&q=80';
+
+const EXTRAS = [
+  {id:'ex1', name:'Bacon',                price:3.00},
+  {id:'ex2', name:'Ovo frito',            price:2.00},
+  {id:'ex3', name:'Presunto',             price:3.00},
+  {id:'ex4', name:'Queijo mussarela',     price:3.00},
+  {id:'ex5', name:'Alface',              price:2.00},
+  {id:'ex6', name:'Tomate',              price:2.00},
+  {id:'ex7', name:'Milho',               price:2.00},
+  {id:'ex8', name:'Picles',              price:3.00},
+  {id:'ex9', name:'Hambúrguer artesanal',price:6.00},
+];
+
+const IMG = 'img/';
+const MENU = {
+  artesanais:[
+    {id:'a1', name:'Brasa Clássico', price:25.90,
+     img: IMG+'brasa-classico.png', fb:'🍔',
+     desc:'Blend bovino artesanal, queijo muçarela, alface, tomate, cebola + molho verde',
+     ings:['Blend bovino artesanal','Queijo muçarela','Alface','Tomate','Cebola','Molho verde'], extras:true},
+    {id:'a4', name:'Cheddar Bacon', price:32.90,
+     img: IMG+'cheddar-bacon.png', fb:'🥓',
+     desc:'Blend bovino artesanal, cheddar, bacon, cebola caramelizada, maionese da casa e alface opcional',
+     ings:['Blend bovino artesanal','Cheddar','Bacon','Cebola caramelizada','Maionese da casa','Alface'], extras:true},
+    {id:'a2', name:'BBQ Brasa', price:33.90,
+     img: IMG+'bbq-brasa.png', fb:'🔥',
+     desc:'Blend bovino artesanal, cheddar, bacon, cebola caramelizada e molho barbecue',
+     ings:['Blend bovino artesanal','Cheddar','Bacon','Cebola caramelizada','Molho barbecue'], extras:true},
+    {id:'a3', name:'Brasa Burguer', price:19.90,
+     img: IMG+'brasa-burguer.png', fb:'🍔',
+     desc:'Blend bovino, queijo mussarela e maionese + molho verde',
+     ings:['Blend bovino','Queijo mussarela','Maionese','Molho verde'], extras:true, badge:'Mais Vendido'},
+  ],
+  especiais:[
+    {id:'e1', name:'Big Brasa', price:35.90,
+     img: IMG+'big-brasa.png', fb:'🏆',
+     desc:'Dois blends bovinos artesanal, cheddar, cebola picada, alface, picles e molho Big Mac',
+     ings:['2x Blend bovino artesanal','Cheddar','Cebola picada','Alface','Picles','Molho Big Mac'], extras:true, badge:'Especial'},
+    {id:'e2', name:'X Brasão', price:40.00,
+     img: IMG+'x-brasão.png', fb:'👑',
+     desc:'Blend bovino artesanal, queijo mussarela, ovo, bacon, picles, presunto, milho, alface, tomate, cebola e maionese da casa',
+     ings:['Blend bovino artesanal','Queijo mussarela','Ovo','Bacon','Picles','Presunto','Milho','Alface','Tomate','Cebola','Maionese da casa'], extras:true, badge:'Moda da Casa'},
+  ],
+  combos:[
+    {id:'c1', name:'Combo Kids',    price:35.00,  img:IMG+'combo-kids.png',     fb:'🧒', desc:'1 Brasa Burguer + Batata pequena + Mini Coca-Cola', ings:[], extras:false},
+    {id:'c2', name:'Combo Solteiro',price:50.00,  img:IMG+'combo-solteiro.png', fb:'🍔', desc:'1 Big Brasa + 1 Batata + 1 Coca-Cola Lata', ings:[], extras:false},
+    {id:'c3', name:'Combo Casal',   price:89.90,  img:IMG+'combo-casal.png',    fb:'💑', desc:'2 Big Brasa + 1 Batata grande + 2 Coca-Cola Lata', ings:[], extras:false, badge:'Popular'},
+    {id:'c4', name:'Combo Família', price:139.90, img:IMG+'combo-familia.png',  fb:'🍽️', desc:'5 Brasa Clássico + 1 Batata Grande + 1 Refrigerante 2 Litros', ings:[], extras:false},
+  ],
+  acomp:[
+    {id:'ac1', name:'Batata Cheddar com Bacon', price:20.00, img:IMG+'batata-com-cheddar-e-bacon.avif', fb:'🍟', desc:'Batata frita crocante coberta com cheddar derretido e bacon', ings:[], extras:false},
+    {id:'ac4', name:'Batatatitas',              price:9.90,  img:IMG+'batatatitas.jpg',    fb:'🍟', desc:'Porção de batata frita crocante', ings:[], extras:false},
+    {id:'ac2', name:'Onion Rings',              price:10.00, img:IMG+'onion-rings.png',    fb:'🧅', desc:'Anéis de cebola empanados e fritos — consulte disponibilidade', ings:[], extras:false},
+    {id:'ac3', name:'Molho Verde',              price:3.00,  img:IMG+'molho-verde.jpg',    fb:'🫙', desc:'Molho verde artesanal da casa', ings:[], extras:false},
+    {id:'ac5', name:'Molho Barbecue',           price:3.00,  img:IMG+'molho-barbecue.jpg', fb:'🫙', desc:'Molho barbecue artesanal', ings:[], extras:false},
+    {id:'ac6', name:'Molho Cheddar',            price:3.00,  img:IMG+'molho-cheddar.jpg',  fb:'🫙', desc:'Molho cheddar cremoso', ings:[], extras:false},
+    {id:'ac7', name:'Molho Big Mac',            price:3.00,  img:IMG+'molho-bigmac.jpg',   fb:'🫙', desc:'Molho especial da casa', ings:[], extras:false},
+  ],
+  bebidas:[
+    {id:'b1', name:'Coca-Cola Lata',      price:6.50,  img:IMG+'coca-lata.png',        fb:'🥤', desc:'350ml gelada'},
+    {id:'b2', name:'Coca-Cola Zero Lata', price:6.50,  img:IMG+'coca-zero-lata.png',   fb:'🥤', desc:'350ml · zero açúcar'},
+    {id:'b3', name:'Fanta Uva',           price:6.00,  img:IMG+'fanta-uva-lata.png',   fb:'🍇', desc:'350ml gelada'},
+    {id:'b4', name:'Fanta Laranja',       price:6.00,  img:IMG+'fanta-laranja-lata.png',fb:'🍊', desc:'350ml gelada'},
+    {id:'b5', name:'Guaraná Antarctica',  price:6.00,  img:IMG+'Antarctica-Guarana-%20lata.png', fb:'🥤', desc:'350ml gelada'},
+    {id:'b6', name:'Cerveja Lata 269ml',  price:6.00,  img:IMG+'cerveja-lata-269ML.png', fb:'🍺', desc:'Gelada e refrescante'},
+    {id:'b7', name:'Cerveja Lata 350ml',  price:7.00,  img:IMG+'cerveja-lata.png',       fb:'🍺', desc:'Gelada e refrescante'},
+    {id:'b8', name:'Coca-Cola 2 Litros',  price:17.00, img:IMG+'coca-2L.png',          fb:'🍶', desc:'Garrafa 2 litros'},
+  ]
+};
+
+const PMAP = {};
+Object.values(MENU).flat().forEach(p => { PMAP[p.id] = p; });
+
+/* ══════════════ RENDER ══════════════ */
+function imgTag(p) {
+  if (p.img) {
+    return `<img src="${p.img}" alt="${p.name}" loading="lazy"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="fallback" style="display:none">${p.fb}</div>`;
+  }
+  return `<div class="fallback">${p.fb}</div>`;
+}
+
+function renderAll() {
+  Object.entries(MENU).forEach(([cat, items]) => {
+    const grid = document.getElementById('g-' + cat);
+    if (!grid) return;
+
+    if (cat === 'bebidas') {
+      items.forEach(p => {
+        const el = document.createElement('div');
+        el.className = 'drink-item fade';
+        const thumbHtml = p.img
+          ? `<img class="drink-thumb" src="${p.img}" alt="${p.name}" loading="lazy"
+               onerror="this.outerHTML='<div class=drink-thumb-fb>${p.fb}</div>'">`
+          : `<div class="drink-thumb-fb">${p.fb}</div>`;
+        el.innerHTML = `
+          <div class="drink-left">
+            ${thumbHtml}
+            <div class="drink-info">
+              <div class="drink-name">${p.name}</div>
+              <div class="drink-desc">${p.desc}</div>
+            </div>
+          </div>
+          <div class="drink-right">
+            <div class="drink-price"><small>R$</small> ${fmt(p.price)}</div>
+            <button class="btn-add-sm" id="add-${p.id}" onclick="quickAdd('${p.id}',this)">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>`;
+        grid.appendChild(el);
+      });
+      return;
+    }
+
+    items.forEach(p => {
+      const hasCustom = p.ings && p.ings.length > 0;
+      const el = document.createElement('div');
+      el.className = 'pcard fade';
+      el.innerHTML = `
+        <div class="pcard-img">
+          ${p.badge ? `<span class="pbadge">${p.badge}</span>` : ''}
+          ${imgTag(p)}
+        </div>
+        <div class="pcard-body">
+          <div class="pcard-name">${p.name}</div>
+          <div class="pcard-desc">${p.desc}</div>
+          <div class="pcard-foot">
+            <div class="pcard-price"><small>R$</small> ${fmt(p.price)}</div>
+            ${hasCustom
+              ? `<button class="btn-add" onclick="openModal('${p.id}')">
+                   <i class="fas fa-fire"></i> Montar
+                 </button>`
+              : `<button class="btn-add" id="add-${p.id}" onclick="quickAdd('${p.id}',this)">
+                   <i class="fas fa-plus"></i> Adicionar
+                 </button>`
+            }
+          </div>
+        </div>`;
+      grid.appendChild(el);
+    });
+  });
+}
+
+/* ══════════════ CART ══════════════ */
+let cart = [], cid = 1;
+
+function quickAdd(pid, btn) {
+  const p = PMAP[pid];
+  addToCart(p, [...(p.ings||[])], [], 1);
+  const orig = btn.innerHTML;
+  btn.classList.add('added');
+  btn.innerHTML = '<i class="fas fa-check"></i>';
+  setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = orig; }, 1600);
+  toast(`${p.name} adicionado ao pedido`);
+}
+
+function addToCart(p, activeIngs, selExtras, qty) {
+  const exPrice = selExtras.reduce((s,e) => s + e.price, 0);
+  cart.push({ cid:cid++, p, activeIngs, selExtras, qty, total:(p.price+exPrice)*qty });
+  refreshUI();
+}
+
+function removeItem(id) { cart = cart.filter(i=>i.cid!==id); refreshUI(); renderCart(); }
+function chgQtyCart(id, d) {
+  const item = cart.find(i=>i.cid===id); if(!item) return;
+  item.qty = Math.max(1, item.qty+d);
+  const ex = item.selExtras.reduce((s,e)=>s+e.price,0);
+  item.total = (item.p.price+ex)*item.qty;
+  refreshUI(); renderCart();
+}
+function grandTotal() { return cart.reduce((s,i)=>s+i.total,0); }
+function totalItems() { return cart.reduce((s,i)=>s+i.qty,0); }
+
+function refreshUI() {
+  const n = totalItems();
+  document.getElementById('cbadge').textContent = n;
+  document.getElementById('cbadge').classList.toggle('on', n>0);
+  document.getElementById('floatCart').classList.toggle('on', n>0);
+  document.getElementById('floatLabel').textContent = `${n} item${n!==1?'s':''} · R$ ${fmt(grandTotal())}`;
+  document.getElementById('cartTot').textContent = `R$ ${fmt(grandTotal())}`;
+  document.getElementById('cartLabel').textContent = n > 0 ? `${n} item${n!==1?'s':''} · R$ ${fmt(grandTotal())}` : 'Meu Pedido';
+}
+
+function renderCart() {
+  const el = document.getElementById('cartItems');
+  if (!cart.length) {
+    el.innerHTML='<div class="cart-empty"><span class="cart-empty-ico"><i class="fas fa-shopping-bag"></i></span><p>Seu carrinho está vazio</p></div>';
+    return;
+  }
+  el.innerHTML = cart.map(i => {
+    const rem = (i.p.ings||[]).filter(x=>!i.activeIngs.includes(x));
+    const lines=[];
+    if(rem.length) lines.push(`Sem: ${rem.join(', ')}`);
+    if(i.selExtras.length) lines.push(`Extra: ${i.selExtras.map(e=>e.name).join(', ')}`);
+    const imgHtml = i.p.img
+      ? `<img class="ci-img" src="${i.p.img}" alt="${i.p.name}" onerror="this.outerHTML='<div class=ci-img-fb>${i.p.fb}</div>'">`
+      : `<div class="ci-img-fb">${i.p.fb}</div>`;
+    return `<div class="ci">
+      ${imgHtml}
+      <div class="ci-info">
+        <div class="ci-name">${i.p.name}</div>
+        ${lines.length?`<div class="ci-custom">${lines.join('<br>')}</div>`:''}
+        <div class="ci-foot">
+          <span class="ci-price">R$ ${fmt(i.total)}</span>
+          <div class="ci-ctrl">
+            <button class="ci-btn" onclick="chgQtyCart(${i.cid},-1)">−</button>
+            <span class="ci-num">${i.qty}</span>
+            <button class="ci-btn" onclick="chgQtyCart(${i.cid},1)">+</button>
+            <button class="ci-btn" onclick="removeItem(${i.cid})" style="color:#e55">
+              <i class="fas fa-trash-alt" style="font-size:9px"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openCart()  { renderCart(); document.getElementById('cartOv').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeCart() { document.getElementById('cartOv').classList.remove('open'); document.body.style.overflow=''; }
+function cartOvClick(e) { if(e.target===document.getElementById('cartOv')) closeCart(); }
+
+/* ══════════════ MODAL ══════════════ */
+let mProd=null, mQty=1, mIngs=[], mExtras=[];
+
+function openModal(pid) {
+  const p = PMAP[pid]; mProd=p; mQty=1;
+  mIngs   = (p.ings||[]).map(x=>({name:x,on:true}));
+  mExtras = EXTRAS.map(e=>({...e,on:false}));
+
+  document.getElementById('mImgWrap').innerHTML = p.img
+    ? `<img class="modal-img" src="${p.img}" alt="${p.name}" onerror="this.outerHTML='<div class=modal-img-fb>${p.fb}</div>'">`
+    : `<div class="modal-img-fb">${p.fb}</div>`;
+
+  document.getElementById('mName').textContent = p.name;
+  document.getElementById('mQty').textContent  = 1;
+  document.getElementById('mHint').textContent = mIngs.length ? 'Toque para retirar ou acrescentar ingredientes do seu lanche.' : '';
+  document.getElementById('mIngSec').style.display  = mIngs.length ? '' : 'none';
+  document.getElementById('mExtraSec').style.display = p.extras ? '' : 'none';
+
+  renderMIngs(); renderMExtras(); updMPrice();
+  document.getElementById('mOv').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal() { document.getElementById('mOv').classList.remove('open'); document.body.style.overflow=''; }
+function mOvClick(e) { if(e.target===document.getElementById('mOv')) closeModal(); }
+
+function renderMIngs() {
+  document.getElementById('mIngList').innerHTML = mIngs.map((x,i)=>`
+    <div class="ing-item ${x.on?'on':'off'}" onclick="togIng(${i})">
+      <span class="ing-lbl">${x.name}</span>
+      <div class="ing-ck"></div>
+    </div>`).join('');
+}
+function renderMExtras() {
+  document.getElementById('mExtraList').innerHTML = mExtras.map((e,i)=>`
+    <div class="extra-item ${e.on?'on':''}" onclick="togExtra(${i})">
+      <span class="ing-lbl">${e.name}</span>
+      <div style="display:flex;align-items:center;gap:7px">
+        <span class="extra-pr">+R$ ${fmt(e.price)}</span>
+        <div class="extra-ck"></div>
+      </div>
+    </div>`).join('');
+}
+function togIng(i)   { mIngs[i].on=!mIngs[i].on;    renderMIngs(); }
+function togExtra(i) { mExtras[i].on=!mExtras[i].on; renderMExtras(); updMPrice(); }
+function chgQty(d)   { mQty=Math.max(1,mQty+d); document.getElementById('mQty').textContent=mQty; updMPrice(); }
+function updMPrice() {
+  if(!mProd) return;
+  const ex = mExtras.filter(e=>e.on).reduce((s,e)=>s+e.price,0);
+  document.getElementById('mPrice').textContent = `R$ ${fmt(mProd.price)}`;
+  document.getElementById('mTotal').textContent = `R$ ${fmt((mProd.price+ex)*mQty)}`;
+}
+function addFromModal() {
+  if(!mProd) return;
+  addToCart(mProd, mIngs.filter(x=>x.on).map(x=>x.name), mExtras.filter(e=>e.on), mQty);
+  closeModal(); toast(`${mProd.name} adicionado ao pedido`);
+}
+
+/* ══════════════ WHATSAPP ══════════════ */
+function orderWA() {
+  if(!cart.length) return;
+  let msg = '🔥 *Pedido — Brasa Artesanal*\n\n';
+  cart.forEach((item,idx)=>{
+    msg += `*${idx+1}. ${item.p.name}* x${item.qty}\n`;
+    const rem = (item.p.ings||[]).filter(x=>!item.activeIngs.includes(x));
+    if(rem.length) msg+=`   ❌ Sem: ${rem.join(', ')}\n`;
+    if(item.selExtras.length) msg+=`   ➕ Extra: ${item.selExtras.map(e=>e.name).join(', ')}\n`;
+    msg+=`   💰 R$ ${fmt(item.total)}\n\n`;
+  });
+  msg+=`*Total: R$ ${fmt(grandTotal())}*\n\nEndereço para entrega: `;
+  window.open(`https://wa.me/5511932568954?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+/* ══════════════ TOAST ══════════════ */
+function toast(msg) {
+  const el=document.getElementById('toast');
+  el.innerHTML=`<i class="fas fa-check-circle" style="color:var(--fire)"></i> ${msg}`;
+  el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+/* ══════════════ SCROLL SPY ══════════════ */
+const SECS=['artesanais','especiais','combos','acomp','bebidas'];
+window.addEventListener('scroll',()=>{
+  const catbs=document.querySelectorAll('.catb');
+  SECS.forEach((id,i)=>{
+    const el=document.getElementById(id); if(!el) return;
+    const r=el.getBoundingClientRect();
+    if(r.top<=160&&r.bottom>=160){ catbs.forEach(b=>b.classList.remove('on')); if(catbs[i]) catbs[i].classList.add('on'); }
+  });
+},{passive:true});
+
+document.querySelectorAll('.catb').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.catb').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    const target = document.getElementById(btn.dataset.sec);
+    const offset = 120;
+    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({top, behavior:'smooth'});
+  });
+});
+
+/* ══════════════ FADE IN ══════════════ */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); });
+},{threshold:0.06});
+
+/* ══════════════ UTIL ══════════════ */
+function fmt(v){ return v.toFixed(2).replace('.',','); }
+
+/* ══════════════ INIT ══════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  renderAll();
+  setTimeout(()=>{ document.querySelectorAll('.fade').forEach(el=>obs.observe(el)); }, 80);
+});
+</script>
+</body>
+</html>
