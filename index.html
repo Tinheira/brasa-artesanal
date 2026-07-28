@@ -837,11 +837,12 @@ function orderWA() {
   if(!cart.length) return;
   let msg = '🔥 *Pedido — Brasa Artesanal*\n\n';
   cart.forEach((item,idx)=>{
+    if(idx>0) msg += '➖➖➖➖➖➖➖➖➖➖\n';
     msg += `*${idx+1}. ${item.p.name}* x${item.qty}\n`;
     const rem = (item.p.ings||[]).filter(x=>!item.activeIngs.includes(x));
-    if(rem.length) msg+=`   ❌ Sem: ${rem.join(', ')}\n`;
-    if(item.swaps&&item.swaps.length) msg+=`   🔄 Troca: ${item.swaps.map(s=>`${s.from} por ${s.to}`).join(', ')}\n`;
-    if(item.selExtras.length) msg+=`   ➕ Extra: ${item.selExtras.map(e=>e.name).join(', ')}\n`;
+    if(rem.length) msg+=`   ❌ *Sem: ${rem.join(', ')}*\n`;
+    if(item.swaps&&item.swaps.length) msg+=`   🔄 *Troca: ${item.swaps.map(s=>`${s.from} por ${s.to}`).join(', ')}*\n`;
+    if(item.selExtras.length) msg+=`   ➕ *Extra: ${item.selExtras.map(e=>e.name).join(', ')}*\n`;
     msg+=`   💰 R$ ${fmt(item.total)}\n\n`;
   });
   msg+=`*Total: R$ ${fmt(grandTotal())}*\n\nEndereço para entrega: `;
