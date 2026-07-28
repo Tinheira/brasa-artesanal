@@ -284,6 +284,11 @@
     .cust-input { width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:9px; padding:10px 12px; font-size:13px; font-family:inherit; color:inherit; resize:none; transition:border-color .2s; }
     .cust-input:focus { outline:none; border-color:rgba(212,86,10,.5); }
     .cust-input.err { border-color:#e55; }
+    .pay-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .pay-opt { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:9px; padding:9px 10px; font-size:12px; font-weight:600; color:inherit; font-family:inherit; cursor:pointer; text-align:center; transition:all .2s; }
+    .pay-opt:hover { border-color:rgba(212,86,10,.35); }
+    .pay-opt.on { background:rgba(212,86,10,.14); border-color:var(--fire); color:var(--fire); }
+    .pay-opt.err { border-color:#e55; }
     .cart-tot { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
     .cart-tot-l { font-size:12px; color:var(--muted); }
     .cart-tot-v { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--fire); }
@@ -537,6 +542,14 @@
         <input type="text" id="custName" class="cust-input" placeholder="Seu nome completo" maxlength="60">
         <input type="text" id="custCep" class="cust-input" placeholder="CEP" maxlength="9" inputmode="numeric">
         <textarea id="custAddr" class="cust-input" placeholder="Endereço completo (rua, número, bairro, complemento)" rows="2" maxlength="200"></textarea>
+        <span class="cust-lbl">Forma de pagamento</span>
+        <div class="pay-grid" id="payGrid">
+          <button type="button" class="pay-opt" data-pay="Dinheiro" onclick="selectPay('Dinheiro')">💵 Dinheiro</button>
+          <button type="button" class="pay-opt" data-pay="PIX" onclick="selectPay('PIX')">📱 PIX</button>
+          <button type="button" class="pay-opt" data-pay="Cartão de Crédito" onclick="selectPay('Cartão de Crédito')">💳 Crédito</button>
+          <button type="button" class="pay-opt" data-pay="Cartão de Débito" onclick="selectPay('Cartão de Débito')">💳 Débito</button>
+        </div>
+        <input type="text" id="custTroco" class="cust-input" placeholder="Troco para quanto? (opcional)" style="display:none" inputmode="numeric">
       </div>
       <div class="cart-tot">
         <span class="cart-tot-l">Total do pedido</span>
@@ -845,29 +858,46 @@ function addFromModal() {
   closeModal(); toast(`${mProd.name} adicionado ao pedido`);
 }
 
+/* ══════════════ PAGAMENTO ══════════════ */
+let selectedPay = null;
+function selectPay(method) {
+  selectedPay = method;
+  document.querySelectorAll('.pay-opt').forEach(b=>{
+    b.classList.toggle('on', b.dataset.pay===method);
+    b.classList.remove('err');
+  });
+  document.getElementById('custTroco').style.display = method==='Dinheiro' ? '' : 'none';
+}
+
 /* ══════════════ WHATSAPP ══════════════ */
 function orderWA() {
   if(!cart.length) return;
 
-  const nameEl = document.getElementById('custName');
-  const cepEl  = document.getElementById('custCep');
-  const addrEl = document.getElementById('custAddr');
+  const nameEl  = document.getElementById('custName');
+  const cepEl   = document.getElementById('custCep');
+  const addrEl  = document.getElementById('custAddr');
+  const trocoEl = document.getElementById('custTroco');
   const name = nameEl.value.trim();
   const cep  = cepEl.value.trim();
   const addr = addrEl.value.trim();
+  const troco = trocoEl.value.trim();
   const cepValid = cep.replace(/\D/g,'').length === 8;
 
   nameEl.classList.toggle('err', !name);
   cepEl.classList.toggle('err', !cepValid);
   addrEl.classList.toggle('err', !addr);
-  if(!name || !cepValid || !addr) {
-    (!name ? nameEl : !cepValid ? cepEl : addrEl).focus();
-    toast('Preencha nome, CEP e endereço completo para fechar o pedido');
+  document.querySelectorAll('.pay-opt').forEach(b=>b.classList.toggle('err', !selectedPay));
+  if(!name || !cepValid || !addr || !selectedPay) {
+    if(!name) nameEl.focus();
+    else if(!cepValid) cepEl.focus();
+    else if(!addr) addrEl.focus();
+    toast(!selectedPay ? 'Escolha a forma de pagamento' : 'Preencha nome, CEP e endereço completo para fechar o pedido');
     return;
   }
 
   let msg = '🔥 *Pedido — Brasa Artesanal*\n\n';
-  msg += `👤 *Nome:* ${name}\n📍 *Endereço:* ${addr}\n📮 *CEP:* ${cep}\n\n`;
+  msg += `👤 *Nome:* ${name}\n📍 *Endereço:* ${addr}\n📮 *CEP:* ${cep}\n`;
+  msg += `💳 *Pagamento:* ${selectedPay}${selectedPay==='Dinheiro' && troco ? ` (troco para R$ ${troco})` : ''}\n\n`;
   cart.forEach((item,idx)=>{
     if(idx>0) msg += '➖➖➖➖➖➖➖➖➖➖\n';
     msg += `*${idx+1}. ${item.p.name}* x${item.qty}\n`;
