@@ -278,6 +278,11 @@
     .ci-btn:hover { background:var(--fire); }
     .ci-num { font-weight:700; min-width:14px; text-align:center; font-size:11px; }
     .cart-ft { padding:14px 18px; border-top:1px solid var(--border); }
+    .cart-cust { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+    .cust-lbl { font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.03em; margin-bottom:-4px; }
+    .cust-input { width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:9px; padding:10px 12px; font-size:13px; font-family:inherit; color:inherit; resize:none; transition:border-color .2s; }
+    .cust-input:focus { outline:none; border-color:rgba(212,86,10,.5); }
+    .cust-input.err { border-color:#e55; }
     .cart-tot { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
     .cart-tot-l { font-size:12px; color:var(--muted); }
     .cart-tot-v { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--fire); }
@@ -526,6 +531,10 @@
       </div>
     </div>
     <div class="cart-ft">
+      <div class="cart-cust">
+        <input type="text" id="custName" class="cust-input" placeholder="Seu nome completo" maxlength="60">
+        <textarea id="custAddr" class="cust-input" placeholder="Endereço completo (rua, número, bairro, complemento)" rows="2" maxlength="200"></textarea>
+      </div>
       <div class="cart-tot">
         <span class="cart-tot-l">Total do pedido</span>
         <span class="cart-tot-v" id="cartTot">R$ 0,00</span>
@@ -835,7 +844,22 @@ function addFromModal() {
 /* ══════════════ WHATSAPP ══════════════ */
 function orderWA() {
   if(!cart.length) return;
+
+  const nameEl = document.getElementById('custName');
+  const addrEl = document.getElementById('custAddr');
+  const name = nameEl.value.trim();
+  const addr = addrEl.value.trim();
+
+  nameEl.classList.toggle('err', !name);
+  addrEl.classList.toggle('err', !addr);
+  if(!name || !addr) {
+    (!name ? nameEl : addrEl).focus();
+    toast('Preencha seu nome e endereço completo para fechar o pedido');
+    return;
+  }
+
   let msg = '🔥 *Pedido — Brasa Artesanal*\n\n';
+  msg += `👤 *Nome:* ${name}\n📍 *Endereço:* ${addr}\n\n`;
   cart.forEach((item,idx)=>{
     if(idx>0) msg += '➖➖➖➖➖➖➖➖➖➖\n';
     msg += `*${idx+1}. ${item.p.name}* x${item.qty}\n`;
@@ -845,7 +869,7 @@ function orderWA() {
     if(item.selExtras.length) msg+=`   ➕ *Extra: ${item.selExtras.map(e=>e.name).join(', ')}*\n`;
     msg+=`   💰 R$ ${fmt(item.total)}\n\n`;
   });
-  msg+=`*Total: R$ ${fmt(grandTotal())}*\n\nEndereço para entrega: `;
+  msg+=`*Total: R$ ${fmt(grandTotal())}*`;
   window.open(`https://wa.me/5511932568954?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
@@ -891,6 +915,9 @@ function fmt(v){ return v.toFixed(2).replace('.',','); }
 document.addEventListener('DOMContentLoaded',()=>{
   renderAll();
   setTimeout(()=>{ document.querySelectorAll('.fade').forEach(el=>obs.observe(el)); }, 80);
+  ['custName','custAddr'].forEach(id=>{
+    document.getElementById(id).addEventListener('input',e=>e.target.classList.remove('err'));
+  });
 });
 </script>
 </body>
