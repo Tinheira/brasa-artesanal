@@ -286,6 +286,10 @@
     .cart-tot { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
     .cart-tot-l { font-size:12px; color:var(--muted); }
     .cart-tot-v { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--fire); }
+    .cart-tot.sub .cart-tot-l,.cart-tot.sub .cart-tot-v { font-size:12px; font-family:inherit; color:var(--cream); font-weight:600; }
+    .cart-tot.sub { margin-bottom:6px; }
+    .cart-tot.grand { border-top:1px solid var(--border); padding-top:10px; margin-top:2px; }
+    .frete-note { font-size:11px; color:var(--muted); background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:8px; padding:8px 10px; margin-bottom:12px; line-height:1.4; }
     .btn-wa { width:100%; background:linear-gradient(135deg,#25D366,#1a9e51); border:none; color:#fff; padding:13px; border-radius:11px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; transition:all .2s; margin-bottom:7px; }
     .btn-wa:hover { transform:scale(1.02); }
     .btn-if { width:100%; background:rgba(212,86,10,.1); border:1px solid rgba(212,86,10,.3); color:var(--fire); padding:11px; border-radius:11px; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all .2s; }
@@ -536,9 +540,18 @@
         <input type="text" id="custCep" class="cust-input" placeholder="CEP" maxlength="9" inputmode="numeric">
         <textarea id="custAddr" class="cust-input" placeholder="Endereço completo (rua, número, bairro, complemento)" rows="2" maxlength="200"></textarea>
       </div>
-      <div class="cart-tot">
-        <span class="cart-tot-l">Total do pedido</span>
+      <div class="frete-note" id="freteNote" style="display:none"></div>
+      <div class="cart-tot sub">
+        <span class="cart-tot-l">Subtotal</span>
         <span class="cart-tot-v" id="cartTot">R$ 0,00</span>
+      </div>
+      <div class="cart-tot sub" id="freteRow" style="display:none">
+        <span class="cart-tot-l">Taxa de entrega</span>
+        <span class="cart-tot-v" id="freteVal">R$ 0,00</span>
+      </div>
+      <div class="cart-tot grand">
+        <span class="cart-tot-l">Total do pedido</span>
+        <span class="cart-tot-v" id="cartGrandTot">R$ 0,00</span>
       </div>
       <button class="btn-wa" onclick="orderWA()">
         <i class="fab fa-whatsapp fa-lg"></i> Pedir pelo WhatsApp
@@ -726,6 +739,7 @@ function chgQtyCart(id, d) {
   refreshUI(); renderCart();
 }
 function grandTotal() { return cart.reduce((s,i)=>s+i.total,0); }
+function orderTotal() { return grandTotal() + (frete.status==='ok' ? frete.value : 0); }
 function totalItems() { return cart.reduce((s,i)=>s+i.qty,0); }
 
 function refreshUI() {
@@ -737,9 +751,83 @@ function refreshUI() {
     el.classList.toggle('on', n>0);
   });
   document.getElementById('floatCart').classList.toggle('on', n>0);
-  document.getElementById('floatLabel').textContent = `${n} item${n!==1?'s':''} · R$ ${fmt(grandTotal())}`;
+  document.getElementById('floatLabel').textContent = `${n} item${n!==1?'s':''} · R$ ${fmt(orderTotal())}`;
   document.getElementById('cartTot').textContent = `R$ ${fmt(grandTotal())}`;
-  document.getElementById('cartLabel').textContent = n > 0 ? `${n} item${n!==1?'s':''} · R$ ${fmt(grandTotal())}` : 'Meu Pedido';
+  document.getElementById('cartGrandTot').textContent = `R$ ${fmt(orderTotal())}`;
+  document.getElementById('cartLabel').textContent = n > 0 ? `${n} item${n!==1?'s':''} · R$ ${fmt(orderTotal())}` : 'Meu Pedido';
+}
+
+/* ══════════════ FRETE (taxa de entrega por distância) ══════════════ */
+const STORE_LAT = -23.1450911, STORE_LON = -46.5821479;
+const FREE_KM = 2, FEE_PER_KM = 1.50;
+let frete = { status:'idle', km:0, value:0, cep:'' }; // idle | loading | ok | unknown
+let freteDebounce;
+
+function haversineKm(lat1,lon1,lat2,lon2) {
+  const R=6371, toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R*2*Math.asin(Math.sqrt(a));
+}
+
+async function nominatimSearch(q) {
+  const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(q)}`);
+  if(!r.ok) return null;
+  const d = await r.json();
+  return d.length ? { lat:+d[0].lat, lon:+d[0].lon } : null;
+}
+
+async function geocodeCep(cepDigits) {
+  try {
+    const r = await fetch(`https://brasilapi.com.br/api/cep/v2/${cepDigits}`);
+    if(!r.ok) return null;
+    const d = await r.json();
+    const c = d.location && d.location.coordinates;
+    if(c && c.latitude && c.longitude) return { lat:+c.latitude, lon:+c.longitude };
+    // Try street-level first — OSM neighborhood names often diverge from Correios' official ones,
+    // so including the neighborhood tends to return zero results even for valid addresses.
+    const attempts = [
+      [d.street,d.city,d.state,'Brasil'],
+      [d.street,d.neighborhood,d.city,d.state,'Brasil'],
+      [d.neighborhood,d.city,d.state,'Brasil'],
+      [d.city,d.state,'Brasil'],
+    ].map(parts => parts.filter(Boolean).join(', ')).filter(Boolean);
+    for(const q of attempts) {
+      const loc = await nominatimSearch(q);
+      if(loc) return loc;
+    }
+    return null;
+  } catch(e) { return null; }
+}
+
+async function calcFrete() {
+  const cepDigits = document.getElementById('custCep').value.replace(/\D/g,'');
+  if(cepDigits.length!==8) { frete={status:'idle',km:0,value:0,cep:cepDigits}; renderFrete(); refreshUI(); return; }
+  frete = {status:'loading',km:0,value:0,cep:cepDigits}; renderFrete();
+  const loc = await geocodeCep(cepDigits);
+  if(cepDigits !== document.getElementById('custCep').value.replace(/\D/g,'')) return; // CEP changed mid-flight
+  if(!loc) { frete={status:'unknown',km:0,value:0,cep:cepDigits}; renderFrete(); refreshUI(); return; }
+  const km = haversineKm(STORE_LAT,STORE_LON,loc.lat,loc.lon);
+  const value = Math.round(Math.max(0,km-FREE_KM)*FEE_PER_KM*100)/100;
+  frete = {status:'ok', km, value, cep:cepDigits};
+  renderFrete(); refreshUI();
+}
+
+function renderFrete() {
+  const row = document.getElementById('freteRow');
+  const val = document.getElementById('freteVal');
+  const note = document.getElementById('freteNote');
+  if(frete.status==='idle') { row.style.display='none'; note.style.display='none'; return; }
+  if(frete.status==='loading') { row.style.display=''; val.textContent='Calculando…'; note.style.display='none'; return; }
+  if(frete.status==='unknown') {
+    row.style.display='none';
+    note.style.display='';
+    note.textContent='⚠️ Não conseguimos calcular a taxa de entrega automaticamente para esse CEP — vamos confirmar o valor com você pelo WhatsApp.';
+    return;
+  }
+  row.style.display='';
+  note.style.display='none';
+  val.textContent = frete.value>0 ? `R$ ${fmt(frete.value)} (${frete.km.toFixed(1)} km)` : `Grátis (${frete.km.toFixed(1)} km)`;
 }
 
 function renderCart() {
@@ -843,7 +931,7 @@ function addFromModal() {
 }
 
 /* ══════════════ WHATSAPP ══════════════ */
-function orderWA() {
+async function orderWA() {
   if(!cart.length) return;
 
   const nameEl = document.getElementById('custName');
@@ -863,8 +951,21 @@ function orderWA() {
     return;
   }
 
+  const cepDigits = cep.replace(/\D/g,'');
+  if(frete.cep!==cepDigits || frete.status==='idle') await calcFrete();
+  if(frete.status==='loading') {
+    toast('Aguarde, calculando a taxa de entrega…');
+    return;
+  }
+
   let msg = '🔥 *Pedido — Brasa Artesanal*\n\n';
-  msg += `👤 *Nome:* ${name}\n📍 *Endereço:* ${addr}\n📮 *CEP:* ${cep}\n\n`;
+  msg += `👤 *Nome:* ${name}\n📍 *Endereço:* ${addr}\n📮 *CEP:* ${cep}\n`;
+  if(frete.status==='ok') {
+    msg += `🛵 *Taxa de entrega:* ${frete.value>0?`R$ ${fmt(frete.value)}`:'Grátis'} (${frete.km.toFixed(1)} km)\n`;
+  } else {
+    msg += `🛵 *Taxa de entrega:* a confirmar\n`;
+  }
+  msg += '\n';
   cart.forEach((item,idx)=>{
     if(idx>0) msg += '➖➖➖➖➖➖➖➖➖➖\n';
     msg += `*${idx+1}. ${item.p.name}* x${item.qty}\n`;
@@ -874,7 +975,9 @@ function orderWA() {
     if(item.selExtras.length) msg+=`   ➕ *Extra: ${item.selExtras.map(e=>e.name).join(', ')}*\n`;
     msg+=`   💰 R$ ${fmt(item.total)}\n\n`;
   });
-  msg+=`*Total: R$ ${fmt(grandTotal())}*`;
+  msg+=`*Subtotal: R$ ${fmt(grandTotal())}*\n`;
+  if(frete.status==='ok') msg+=`*Taxa de entrega: ${frete.value>0?`R$ ${fmt(frete.value)}`:'Grátis'}*\n`;
+  msg+=`*Total: R$ ${fmt(orderTotal())}*`;
   window.open(`https://wa.me/5511932568954?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
@@ -926,6 +1029,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('custCep').addEventListener('input',e=>{
     const d = e.target.value.replace(/\D/g,'').slice(0,8);
     e.target.value = d.length>5 ? `${d.slice(0,5)}-${d.slice(5)}` : d;
+    clearTimeout(freteDebounce);
+    freteDebounce = setTimeout(calcFrete, 400);
   });
 });
 </script>
