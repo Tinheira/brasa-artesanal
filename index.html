@@ -284,7 +284,7 @@
     .cust-input { width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:9px; padding:10px 12px; font-size:13px; font-family:inherit; color:inherit; resize:none; transition:border-color .2s; }
     .cust-input:focus { outline:none; border-color:rgba(212,86,10,.5); }
     .cust-input.err { border-color:#e55; }
-    .pay-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .pay-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
     .pay-opt { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:9px; padding:9px 10px; font-size:12px; font-weight:600; color:inherit; font-family:inherit; cursor:pointer; text-align:center; transition:all .2s; }
     .pay-opt:hover { border-color:rgba(212,86,10,.35); }
     .pay-opt.on { background:rgba(212,86,10,.14); border-color:var(--fire); color:var(--fire); }
@@ -546,8 +546,7 @@
         <div class="pay-grid" id="payGrid">
           <button type="button" class="pay-opt" data-pay="Dinheiro" onclick="selectPay('Dinheiro')">💵 Dinheiro</button>
           <button type="button" class="pay-opt" data-pay="PIX" onclick="selectPay('PIX')">📱 PIX</button>
-          <button type="button" class="pay-opt" data-pay="Cartão de Crédito" onclick="selectPay('Cartão de Crédito')">💳 Crédito</button>
-          <button type="button" class="pay-opt" data-pay="Cartão de Débito" onclick="selectPay('Cartão de Débito')">💳 Débito</button>
+          <button type="button" class="pay-opt" data-pay="Outros" onclick="selectPay('Outros')">🔖 Outros</button>
         </div>
         <input type="text" id="custTroco" class="cust-input" placeholder="Troco para quanto? (opcional)" style="display:none" inputmode="numeric">
       </div>
@@ -858,6 +857,30 @@ function addFromModal() {
   closeModal(); toast(`${mProd.name} adicionado ao pedido`);
 }
 
+/* ══════════════ AUTO-PREENCHER ENDEREÇO PELO CEP ══════════════ */
+let addrAutoFill = true; // false assim que o cliente editar o endereço manualmente
+let cepLookupDebounce;
+
+async function fillAddressFromCep() {
+  const cepDigits = document.getElementById('custCep').value.replace(/\D/g,'');
+  if(cepDigits.length!==8) return;
+  const addrEl = document.getElementById('custAddr');
+  if(!addrAutoFill && addrEl.value.trim()) return;
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cepDigits}/json/`);
+    if(!r.ok) return;
+    const d = await r.json();
+    if(d.erro) return;
+    const parts = [d.logradouro, d.bairro, [d.localidade,d.uf].filter(Boolean).join(' - ')].filter(Boolean);
+    if(!parts.length) return;
+    addrEl.value = parts.join(', ') + ', nº ';
+    addrEl.classList.remove('err');
+    addrAutoFill = true;
+    addrEl.focus();
+    addrEl.setSelectionRange(addrEl.value.length, addrEl.value.length);
+  } catch(e) { /* falha silenciosa — cliente preenche manualmente */ }
+}
+
 /* ══════════════ PAGAMENTO ══════════════ */
 let selectedPay = null;
 function selectPay(method) {
@@ -986,7 +1009,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('custCep').addEventListener('input',e=>{
     const d = e.target.value.replace(/\D/g,'').slice(0,8);
     e.target.value = d.length>5 ? `${d.slice(0,5)}-${d.slice(5)}` : d;
+    clearTimeout(cepLookupDebounce);
+    cepLookupDebounce = setTimeout(fillAddressFromCep, 300);
   });
+  document.getElementById('custAddr').addEventListener('input',()=>{ addrAutoFill = false; });
 });
 </script>
 </body>
