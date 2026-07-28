@@ -100,6 +100,7 @@
     .resto-meta-item { display:flex; align-items:center; gap:5px; font-size:12px; color:rgba(245,237,230,.55); }
     .resto-meta-item i { color:var(--fire); font-size:11px; }
     .resto-open { background:rgba(37,211,102,.15); color:#25D366; border:1px solid rgba(37,211,102,.3); border-radius:50px; padding:2px 10px; font-size:10px; font-weight:700; letter-spacing:.5px; }
+    .resto-open.closed { background:rgba(197,60,60,.15); color:#e55; border-color:rgba(197,60,60,.35); }
     .resto-wa {
       background:linear-gradient(135deg,#25D366,#1a9e51); border:none; color:#fff;
       padding:10px 24px; border-radius:50px; font-size:13px; font-weight:600;
@@ -405,8 +406,8 @@
 <div class="resto-banner">
   <img class="resto-logo-img" src="img/logo-brasa-artesanal.png" alt="Brasa Artesanal">
   <div class="resto-meta">
-    <span class="resto-open">ABERTO</span>
-    <span class="resto-meta-item"><i class="fas fa-clock"></i> 18h – 02h</span>
+    <span class="resto-open" id="restoOpenBadge">ABERTO</span>
+    <span class="resto-meta-item"><i class="fas fa-clock"></i> Seg-Sáb 18h – 01h</span>
     <span class="resto-meta-item"><i class="fas fa-motorcycle"></i> Delivery</span>
   </div>
   <button type="button" class="resto-wa" onclick="window.open('https://wa.me/5511932568954','_blank')">
@@ -455,8 +456,9 @@
     </div>
     <div class="f-sec">
       <h4>Horário</h4>
-      <p>Todos os dias</p>
-      <p>18h00 às 02h00</p>
+      <p>Segunda a Sábado</p>
+      <p>18h00 às 01h00</p>
+      <p>Domingo: Fechado</p>
     </div>
     <div class="f-sec">
       <h4>Contato</h4>
@@ -886,6 +888,31 @@ function toast(msg) {
   clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2200);
 }
 
+/* ══════════════ HORÁRIO DE FUNCIONAMENTO ══════════════ */
+// Segunda a sábado, 18h às 01h (o turno de sábado vai até 1h de domingo). Domingo fechado o dia todo.
+function spNow() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone:'America/Sao_Paulo', weekday:'short', hour:'2-digit', minute:'2-digit', hour12:false
+  }).formatToParts(new Date());
+  const map = {};
+  parts.forEach(p=>map[p.type]=p.value);
+  const weekdays = {Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+  let hour = parseInt(map.hour,10);
+  if(hour===24) hour=0;
+  return { day: weekdays[map.weekday], hour };
+}
+function isStoreOpen() {
+  const {day,hour} = spNow();
+  return (hour>=18 && day!==0) || (hour<1 && day!==1);
+}
+function updateOpenBadge() {
+  const el = document.getElementById('restoOpenBadge');
+  if(!el) return;
+  const open = isStoreOpen();
+  el.textContent = open ? 'ABERTO' : 'FECHADO';
+  el.classList.toggle('closed', !open);
+}
+
 /* ══════════════ SCROLL SPY ══════════════ */
 const SECS=['artesanais','especiais','combos','acomp','bebidas'];
 window.addEventListener('scroll',()=>{
@@ -920,6 +947,8 @@ function fmt(v){ return v.toFixed(2).replace('.',','); }
 document.addEventListener('DOMContentLoaded',()=>{
   renderAll();
   setTimeout(()=>{ document.querySelectorAll('.fade').forEach(el=>obs.observe(el)); }, 80);
+  updateOpenBadge();
+  setInterval(updateOpenBadge, 60000);
   ['custName','custCep','custAddr'].forEach(id=>{
     document.getElementById(id).addEventListener('input',e=>e.target.classList.remove('err'));
   });
