@@ -533,6 +533,7 @@
     <div class="cart-ft">
       <div class="cart-cust">
         <input type="text" id="custName" class="cust-input" placeholder="Seu nome completo" maxlength="60">
+        <input type="text" id="custCep" class="cust-input" placeholder="CEP" maxlength="9" inputmode="numeric">
         <textarea id="custAddr" class="cust-input" placeholder="Endereço completo (rua, número, bairro, complemento)" rows="2" maxlength="200"></textarea>
       </div>
       <div class="cart-tot">
@@ -846,20 +847,24 @@ function orderWA() {
   if(!cart.length) return;
 
   const nameEl = document.getElementById('custName');
+  const cepEl  = document.getElementById('custCep');
   const addrEl = document.getElementById('custAddr');
   const name = nameEl.value.trim();
+  const cep  = cepEl.value.trim();
   const addr = addrEl.value.trim();
+  const cepValid = cep.replace(/\D/g,'').length === 8;
 
   nameEl.classList.toggle('err', !name);
+  cepEl.classList.toggle('err', !cepValid);
   addrEl.classList.toggle('err', !addr);
-  if(!name || !addr) {
-    (!name ? nameEl : addrEl).focus();
-    toast('Preencha seu nome e endereço completo para fechar o pedido');
+  if(!name || !cepValid || !addr) {
+    (!name ? nameEl : !cepValid ? cepEl : addrEl).focus();
+    toast('Preencha nome, CEP e endereço completo para fechar o pedido');
     return;
   }
 
   let msg = '🔥 *Pedido — Brasa Artesanal*\n\n';
-  msg += `👤 *Nome:* ${name}\n📍 *Endereço:* ${addr}\n\n`;
+  msg += `👤 *Nome:* ${name}\n📍 *Endereço:* ${addr}\n📮 *CEP:* ${cep}\n\n`;
   cart.forEach((item,idx)=>{
     if(idx>0) msg += '➖➖➖➖➖➖➖➖➖➖\n';
     msg += `*${idx+1}. ${item.p.name}* x${item.qty}\n`;
@@ -915,8 +920,12 @@ function fmt(v){ return v.toFixed(2).replace('.',','); }
 document.addEventListener('DOMContentLoaded',()=>{
   renderAll();
   setTimeout(()=>{ document.querySelectorAll('.fade').forEach(el=>obs.observe(el)); }, 80);
-  ['custName','custAddr'].forEach(id=>{
+  ['custName','custCep','custAddr'].forEach(id=>{
     document.getElementById(id).addEventListener('input',e=>e.target.classList.remove('err'));
+  });
+  document.getElementById('custCep').addEventListener('input',e=>{
+    const d = e.target.value.replace(/\D/g,'').slice(0,8);
+    e.target.value = d.length>5 ? `${d.slice(0,5)}-${d.slice(5)}` : d;
   });
 });
 </script>
